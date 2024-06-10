@@ -13,9 +13,9 @@ const ToDoForm = () => {
     } = useForm();
     const formData = watch();
 
-    const formSubmit = (data, e) => {
+    const formSubmit = (data:object) => {
         reset();
-        e.preventDefault();
+        // e.preventDefault();
         console.log("To do user data", data);
     };
 
