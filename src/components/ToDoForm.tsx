@@ -1,6 +1,15 @@
-"use client"
+"use client";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { ClosedEyeIcon, EyeIcon } from "./Icons";
+
+interface UserData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
 
 const ToDoForm = () => {
     const {
@@ -10,13 +19,17 @@ const ToDoForm = () => {
         getValues,
         formState: { errors },
         reset
-    } = useForm();
-    const formData = watch();
+    } = useForm<UserData>();
 
-    const formSubmit = (data:object) => {
+    const formData = watch();
+    const [passwordShow, setPasswordShow] = useState(false);
+    const [confirmPasswordShow, setConfirmPasswordShow] = useState(false);
+    const [userDataShow, setUserDataShow] = useState<UserData[]>([]);
+
+    const formSubmit: SubmitHandler<UserData> = (data) => {
         reset();
-        // e.preventDefault();
         console.log("To do user data", data);
+        setUserDataShow(prevData => [...prevData, data]);
     };
 
     return (
@@ -48,46 +61,77 @@ const ToDoForm = () => {
                     <input
                         className="p-2 focus:outline-none rounded-md mt-6"
                         type="email"
-                        {...register("email", { required: true })}
+                        {...register("email", {
+                            required: "Email Address is required",
+                            pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: "Please enter a valid email address"
+                            }
+                        })}
                         placeholder="Email"
                     />
-                    {errors.email && <p className="error">Email address is required.</p>}
+                    {errors.email && (
+                        <p className="error">{errors.email.message}</p>
+                    )}
                     {/* ===================PASSWORD========================== */}
-                    <input
-                        className="p-2 focus:outline-none rounded-md mt-6"
-                        type="password"
-                        {...register("password", {
-                            required: "Please Enter Your Password",
-                            minLength: {
-                                value: 8,
-                                message: "Password must be at least 8 characters long!"
-                            }
-                        })}
-                        placeholder="Password"
-                    />
-                    <p className="error-message">{errors.password?.message as string}</p>
-                    {/* {errors.password && <p className="error">Password is required.</p>} */}
+                    <div className="relative mt-6">
+                        <div onClick={() => setPasswordShow(!passwordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {passwordShow ? <EyeIcon /> : <ClosedEyeIcon />}</div>
+                        <input
+                            className="p-2 pe-10 focus:outline-none w-full rounded-md"
+                            type={passwordShow ? 'text' : 'password'}
+                            {...register("password", {
+                                required: "Please Enter Your Password",
+                                minLength: {
+                                    value: 8,
+                                    message: "Password must be at least 8 characters long!"
+                                }
+                            })}
+                            placeholder="Password"
+                        />
+                    </div>
+                    <p className="error-message">{errors.password?.message}</p>
                     {/* ===================CONFIRM PASSWORD========================== */}
-                    <input
-                        className="p-2 focus:outline-none rounded-md mt-6"
-                        type="password"
-                        {...register("confirmPassword", {
-                            validate: (match) => {
-                                const password = getValues("password")
-                                return match === password || "Passwords should match!"
-                            }
-                        })}
-                        placeholder="Confirm Password"
-                    />
-                    {/* {errors.password && <p className="error">Confirm Password is required.</p>} */}
-                    {errors.password ? "Confirm Password is required" :
-                        <p className="error-message">{errors.confirmPassword?.message as string}</p>
-                    }
+                    <div className="relative mt-6">
+                        <div onClick={() => setConfirmPasswordShow(!confirmPasswordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {confirmPasswordShow ? <EyeIcon /> : <ClosedEyeIcon />}</div>
+                        <input
+                            className="p-2 pe-10 w-full focus:outline-none rounded-md "
+                            type={confirmPasswordShow ? 'text' : 'password'}
+                            {...register("confirmPassword", {
+                                required: "Confirm Password is required",
+                                validate: (match) => {
+                                    const password = getValues("password")
+                                    return match === password || "Passwords should match!"
+                                }
+                            })}
+                            placeholder="Confirm Password"
+                        />
+                    </div>
+                    <p className="error-message">{errors.confirmPassword?.message as string}</p>
                 </div>
                 <div className="formData">
                     <input className="btn mt-6 text-white text-xl font-bold py-2.5 text-center bg-red-600 rounded-md w-full cursor-pointer duration-300 hover:bg-blue-950 hover:text-white" type="submit" value="Save" />
                 </div>
             </form>
+            {userDataShow.length > 0 && (
+                <div className="formValues mt-10 max-w-[900px] w-full">
+                    <div className="flex gap-16 border border-b-0 p-2 translate-y-1">
+                        <p className="values text-base font-bold">First Name</p>
+                        <p className="values text-base font-bold">Last Name</p>
+                        <p className="values text-base font-bold">Email</p>
+                        <p className="values text-base font-bold">Password</p>
+                    </div>
+                    {userDataShow.map((value, index) => (
+                        <div key={index} className="flex items-center p-2 gap-5 border justify-between mt-1">
+                            <p className="values text-base">{value.firstName}</p>
+                            <p className="values text-base">{value.lastName}</p>
+                            <p className="values text-base">{value.email}</p>
+                            <p className="values text-base">{value.password}</p>
+                            <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Update</button>
+                            <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Delete</button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
