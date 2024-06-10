@@ -80,11 +80,12 @@ const ToDoForm = () => {
                             className="p-2 pe-10 focus:outline-none w-full rounded-md"
                             type={passwordShow ? 'text' : 'password'}
                             {...register("password", {
-                                required: "Please Enter Your Password",
-                                minLength: {
-                                    value: 8,
-                                    message: "Password must be at least 8 characters long!"
-                                }
+                                required: "Please Enter Your Password 8-16 characters long",
+                                pattern: {
+                                    value:
+                                        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/,
+                                    message: "Pasword must be strong at least one uppercase,lowercase, number and special character letter",
+                                },
                             })}
                             placeholder="Password"
                         />
@@ -120,16 +121,18 @@ const ToDoForm = () => {
                         <p className="values text-base font-bold">Email</p>
                         <p className="values text-base font-bold">Password</p>
                     </div>
-                    {userDataShow.map((value, index) => (
-                        <div key={index} className="flex items-center p-2 gap-5 border justify-between mt-1">
-                            <p className="values text-base">{value.firstName}</p>
-                            <p className="values text-base">{value.lastName}</p>
-                            <p className="values text-base">{value.email}</p>
-                            <p className="values text-base">{value.password}</p>
-                            <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Update</button>
-                            <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Delete</button>
-                        </div>
-                    ))}
+                    {userDataShow.map((value, index) => {
+                        return (
+                            <div key={index} className="flex items-center p-2 gap-5 border justify-between mt-1">
+                                <p className="values text-base">{value.firstName}</p>
+                                <p className="values text-base">{value.lastName}</p>
+                                <p className="values text-base">{value.email}</p>
+                                <p className="values text-base">{value.password}</p>
+                                <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Update</button>
+                                <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Delete</button>
+                            </div>
+                        )
+                    })}
                 </div>
             )}
         </div>
