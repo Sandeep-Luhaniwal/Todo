@@ -18,18 +18,54 @@ const ToDoForm = () => {
         handleSubmit,
         getValues,
         formState: { errors },
-        reset
+        reset,
+        setValue,
+        setError
     } = useForm<UserData>();
 
     const formData = watch();
     const [passwordShow, setPasswordShow] = useState(false);
     const [confirmPasswordShow, setConfirmPasswordShow] = useState(false);
     const [userDataShow, setUserDataShow] = useState<UserData[]>([]);
+    const [editIndex, setEditIndex] = useState<number | null>(null);
 
     const formSubmit: SubmitHandler<UserData> = (data) => {
+        const emailExists = userDataShow.some(
+            (item, index) => item.email === data.email && index !== editIndex
+        );
+        if (emailExists) {
+            setError("email", {
+                type: "manual",
+                message: "This email already exists.",
+            });
+            return;
+        }
+        if (editIndex !== null) {
+            const updatedFormDataList = userDataShow.map((item, index) =>
+                index === editIndex ? data : item
+            );
+            setUserDataShow(updatedFormDataList);
+            setEditIndex(null);
+        } else {
+            setUserDataShow([...userDataShow, data]);
+        }
         reset();
-        console.log("To do user data", data);
-        setUserDataShow(prevData => [...prevData, data]);
+        // console.log("To do user data", data);
+        // setUserDataShow(prevData => [...prevData, data]);
+    };
+    const handleEdit = (index: number) => {
+        const formData = userDataShow[index];
+        setValue('firstName', formData.firstName);
+        setValue('lastName', formData.lastName);
+        setValue('email', formData.email);
+        setValue('password', formData.password);
+        setValue('confirmPassword', formData.confirmPassword);
+        setEditIndex(index);
+    };
+    const handleDelete = (index: number) => {
+        const updatedFormDataList = userDataShow.filter((_, i) => i !== index);
+        setUserDataShow(updatedFormDataList);
+        reset();
     };
 
     return (
@@ -70,12 +106,15 @@ const ToDoForm = () => {
                         })}
                         placeholder="Email"
                     />
+
                     {errors.email && (
-                        <p className="error">{errors.email.message}</p>
+                        <p className="error">{errors.email.message
+                            ? errors.email.message
+                            : "Please enter your email"}</p>
                     )}
                     {/* ===================PASSWORD========================== */}
                     <div className="relative mt-6">
-                        <div onClick={() => setPasswordShow(!passwordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {passwordShow ? <EyeIcon /> : <ClosedEyeIcon />}</div>
+                        <div onClick={() => setPasswordShow(!passwordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {passwordShow ? <ClosedEyeIcon /> : <EyeIcon />}</div>
                         <input
                             className="p-2 pe-10 focus:outline-none w-full rounded-md"
                             type={passwordShow ? 'text' : 'password'}
@@ -93,7 +132,7 @@ const ToDoForm = () => {
                     <p className="error-message">{errors.password?.message}</p>
                     {/* ===================CONFIRM PASSWORD========================== */}
                     <div className="relative mt-6">
-                        <div onClick={() => setConfirmPasswordShow(!confirmPasswordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {confirmPasswordShow ? <EyeIcon /> : <ClosedEyeIcon />}</div>
+                        <div onClick={() => setConfirmPasswordShow(!confirmPasswordShow)} className="absolute top-1/2 -translate-y-1/2 end-2 cursor-pointer"> {confirmPasswordShow ? <ClosedEyeIcon /> : <EyeIcon />}</div>
                         <input
                             className="p-2 pe-10 w-full focus:outline-none rounded-md "
                             type={confirmPasswordShow ? 'text' : 'password'}
@@ -110,7 +149,7 @@ const ToDoForm = () => {
                     <p className="error-message">{errors.confirmPassword?.message as string}</p>
                 </div>
                 <div className="formData">
-                    <input className="btn mt-6 text-white text-xl font-bold py-2.5 text-center bg-red-600 rounded-md w-full cursor-pointer duration-300 hover:bg-blue-950 hover:text-white" type="submit" value="Save" />
+                    <input className="btn mt-6 text-white text-xl font-bold py-2.5 text-center bg-red-600 rounded-md w-full cursor-pointer duration-300 hover:bg-blue-950 hover:text-white" type="submit" value={editIndex !== null ? "Update" : "Submit"} />
                 </div>
             </form>
             {userDataShow.length > 0 && (
@@ -128,8 +167,8 @@ const ToDoForm = () => {
                                 <p className="values text-base">{value.lastName}</p>
                                 <p className="values text-base">{value.email}</p>
                                 <p className="values text-base">{value.password}</p>
-                                <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Update</button>
-                                <button className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Delete</button>
+                                <button onClick={() => handleEdit(index)} className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Update</button>
+                                <button onClick={() => handleDelete(index)} className="py-2 px-10 bg-blue-800 rounded-md text-white font-bold border border-blue-800 hover:bg-white duration-200 hover:text-blue-800">Delete</button>
                             </div>
                         )
                     })}
